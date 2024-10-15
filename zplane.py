@@ -26,7 +26,7 @@ from matplotlib.figure import Figure
 from matplotlib import rcParams
 
 
-def zplane(b, a, filename=None):
+def zplane(b, a, filename=None, title=None):
     """Plot the complex z-plane given a transfer function.
     """
 
@@ -78,7 +78,8 @@ def zplane(b, a, filename=None):
     ticks = [-1, -.5, .5, 1];
     plt.xticks(ticks);
     plt.yticks(ticks)
-
+    if title is not None:
+        plt.title(title)
     if filename is None:
         plt.show()
     else:

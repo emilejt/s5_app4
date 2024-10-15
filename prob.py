@@ -39,28 +39,48 @@ def show_and_compare_images(image_deforme, clean_image, deformation_type):
 
     plt.show()
 
-
 def rotate_image_90_right(image):
-    # Dimensions de l'image originale
-    height, width = image.shape
 
-    # Créer une nouvelle image pour la rotation (width et height sont inversés)
-    rotated_image = np.zeros((width, height), dtype=image.dtype)
+    # Obtenir les dimensions de l'image
+    width, height = image.shape[:2]
 
-    # Matrice de rotation pour 90 degrés vers la droite
-    rotation_matrix = np.array([[0, 1], [-1, 0]])
 
-    # Appliquer la transformation de rotation
-    for x in range(height):
-        for y in range(width):
-            # Nouvelle position (x', y') selon la matrice de rotation
-            new_x, new_y = rotation_matrix @ np.array([x, y])
-            # Ajuster les coordonnées dans le système de coordonnées de l'image tournée
-            # new_x devient une colonne (donc y dans le nouvel espace)
-            # new_y est inversé pour être compatible avec le système d'origine de l'image
-            rotated_image[y, height - 1 - x] = image[x, y]
+    angle_rad = 270/180 * np.pi
+
+    # Matrice de rotation avec l'angle de rotation de 270
+    rotation_matrix = np.array([[int(np.cos(angle_rad)), int(-np.sin(angle_rad))], [int(np.sin(angle_rad)), int(np.cos(angle_rad))]])
+
+    # Créer une nouvelle image avec les dimensions inversées (car 90° de rotation)
+    rotated_image = np.zeros((height, width), dtype=image.dtype)
+
+    # Appliquer la rotation pixel par pixel
+    for col in range(width):
+        for row in range(height):
+
+            corrected_row = height - 1 - row
+            # Calculer la nouvelle position du pixel après la rotation
+            new_position = np.dot(rotation_matrix, [col, corrected_row])
+            new_i, new_j = new_position[0], new_position[1]
+            
+
+            rotated_image[int(new_i), int(new_j)] = image[col, corrected_row]
 
     return rotated_image
+
+def rotation_lineaire(image):
+
+    width, height = image.shape[:2]
+    rotated_image = np.zeros((height, width))
+
+
+    for e1 in range(width):
+        for e2 in range(height):
+            u1 = e2
+            u2 = -e1
+            rotated_image[u1][u2] = image[e1][e2]
+
+    return rotated_image
+
 
 def filtre_methode_bilinieaire(image):
     fc = 500
@@ -133,7 +153,7 @@ def compress(image, factor=0.5):
     transferMatrix = sorted_eigenvectors.T
 
     # Choisir les vecteurs propres les plus significatifs selon le facteur
-    num_components = int(len(eigenvalues) * factor)
+    num_components = int(len(eigenvalues) * (1-factor))
     compression_eigenvectors = transferMatrix[:num_components]
 
     # Projeter l'image dans la nouvelle base
